@@ -1,0 +1,13 @@
+metadata:
+  output_dir: ${HOME}/rnadata
+  sample_annotation: annocomb_GSE108003.csv
+  pipeline_interfaces: ${CODEBASE}/rnapipe/pipeline_interface.yaml
+
+derived_columns: [data_source]
+
+data_sources:
+  SRA: "${SRARAW}{SRR}.bam"
+
+pipeline_args:
+  rnaKallisto.py:
+    "-D": null
