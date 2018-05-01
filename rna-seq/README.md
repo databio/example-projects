@@ -9,7 +9,7 @@ Each data set has a GSE accession. For our example projects, we will be using GS
 Follow [this link]("https://github.com/pepkit/geofetch") to learn how to use the geofetch tool and download the data into BAM format.
 
 After it is downloaded, we will need to make some adjustments to the annotation sheet and create a project_config file.
-First, move the sample annotation sheet from the SRAMETA folder into your home project folder.
+First, copy the sample annotation sheet from the SRAMETA folder into your home project folder.
 It will also help to make a clone of this on your local machine so it will be easier to modify columns in the csv file.
 
 The entries in the protocol column have to be changed to the correct RNA sequencing protocol.
@@ -23,3 +23,5 @@ Next, we will create the project_config file.
 ## RNA-Seq Pipeline
 
 The lab's RNA-Seq pipeline is available in [this]("https://github.com/databio/rnapipe") Git repository.
+
+
