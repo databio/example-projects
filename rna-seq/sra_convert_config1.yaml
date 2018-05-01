@@ -1,0 +1,9 @@
+metadata:
+  output_dir: ${PROCESSED}pepsra
+  sample_annotation: annocomb_GSE107655.csv
+  pipeline_interfaces: ${CODEBASE}geofetch/sra_convert/pipeline_interface_convert.yaml
+
+derived_columns: [data_source]
+
+data_sources:
+  BAM: "${SRARAW}/sra/{SRR}.sra"

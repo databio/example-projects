@@ -1,12 +1,21 @@
 metadata:
-  output_dir: ${HOME}/rnatestdata
+  output_dir: ${PROCESSED}/rnaseq_example
   sample_annotation: annocomb_GSE108003.csv
   pipeline_interfaces: ${CODEBASE}/rnapipe/pipeline_interface.yaml
 
-derived_columns: [data_source]
+derived_columns: [data_source, result_source]
 
 data_sources:
   BAM: "${SRABAM}{SRR}.bam"
+  src: "${PROCESSED}/rnaseq_example/results_pipeline/{sample_name}/kallisto/abundance.tsv"
+
+implied_columns:
+  Sample_organism_ch1:
+    "Homo sapiens":
+      transcriptome: hg38_cdna
+    "Mus musculus":
+      transcriptome: mm10_cdna
+      library: rnaKallisto
 
 pipeline_args:
   rnaKallisto.py:
