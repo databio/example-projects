@@ -19,22 +19,33 @@ DESeq_Packager <- function(p, data_source, gene_names, gene_counts){
   
   sample_frame <- pepr::samples(p)
   sample_names <- sample_frame[["sample_name"]]
-  files <- sample_frame[ , data_source]
+  files <- sample_frame[[data_source]]
   
   
   print("reading in tables...")
   
   #create a table for a sample, then put it into a list
-  dt_list <- vector(mode="list",length=length(files))
+  dt_list <- vector(mode="list")
+  #dt_list <- vector(mode="list",length=length(files))
+  pos <- 1
   for(i in 1:length(files)){
-    sampleTable <- fread(files[i])
+    fnferror <- tryCatch(      
+      sampleTable <- fread(files[i]),
+      error=function(e) e
+    )
+    if(inherits(fnferror, "error" )){
+      print(paste("Skipping missing file", sample_names[i]))
+      next
+    }
     sampleTable <- sampleTable[, c(gene_names, gene_counts), with=FALSE]
     sampleTable[[gene_counts]] <- lapply(sampleTable[[gene_counts]], as.integer)
     colnames(sampleTable)[1] <- gene_names
     colnames(sampleTable)[2] <- sample_names[i]
-    dt_list[[i]] <- sampleTable
+    dt_list[[pos]] <- sampleTable
+    pos <- pos+1
   }
-  
+
+    
   print("merging samples into one table...")
   
   #join each sample table from the list
@@ -42,10 +53,6 @@ DESeq_Packager <- function(p, data_source, gene_names, gene_counts){
   for(i in 3:length(dt_list)){
     countDataSet <- merge(countDataSet, dt_list[[i]])
   }
-  
-  #set the row names as the gene names, then remove the gene name column
-  row.names(countDataSet) <- countDataSet[[1]]
-  countDataSet[,1] <- NULL
   
   print("packaged!")
   return(countDataSet)
