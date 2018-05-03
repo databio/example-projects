@@ -19,8 +19,8 @@ We will be using rnaKallisto for this example.
 The entries in the data_source column should also be changed to BAM for clarity.
 Your sample annotation sheet should look like the ones provided in this repository.
 
-Next, we will create the project_config file.
-The example yamls are in this repository as well (ignore the result_source derived column for now, it will be needed later).
+## Project Config File
+The example yamls are in this repository (ignore the result_source derived column for now, it will be needed later).
 The metadata section contains the output_dir, sample_annotation, and pipeline_interfaces attributes. 
 The derived_columns section contains the derived column data_source, in which we changed all of the values into "BAM" earlier.
 Thus, the data_sources section should contain `BAM: "${SRABAM}{SRR}.bam"`.
@@ -39,5 +39,11 @@ After it is finished running, the kallisto results should be in `$PROCESSED/rnas
 
 DESeq-Packager is another tool that uses the PEP project format, but in R to produce a countDataSet needed for DESeq analysis. More info can be found [here](https://github.com/databio/DESeq-Packager).
 You can copy the DESeq-Packager.R file into this folder and also create a rundeseq.R file, which contains a few lines of R code to install necessary packages, call the DESeq_Packager function, and save the result into an .RData file.
+
+Right now the PEP does not know the exact paths to the output tsv files which we will be combining into one table for DESeq.
+The (current) solution to this is to add another derived column to the yaml file, which will construct a column for the file paths.
+The final project_config file now should look like the one in this repository.
+In the future, a functionality may be added to Looper to output the location of the processed files.
+
 I ran the rundeseq.R file using `R < rundeseq.R --no-save` on the command line, but there are multiple other ways to run the R script to your liking.
 After the script is done running, the countDataSet will be saved to .RData, and can be copied to another file for further DESeq analysis!
