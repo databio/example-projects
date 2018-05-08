@@ -7,7 +7,7 @@ It is assumed that the user is on the Databio Rivanna server/all environment var
 
 To download publicly available Sequence Read data from the Gene Expression Omnibus (GEO), you can use the tool geofetch.
 Each data set has a GSE accession. For our example projects, we will be using GSE107655 and GSE108003.
-Follow [this link](https://github.com/pepkit/geofetch) to learn how to use the geofetch tool and download the data into SRA, then BAM format.
+Follow [this link](https://github.com/pepkit/geofetch) to learn how to use the geofetch tool and download the SRA data.
 The first step involving looper will be to convert the SRA files into BAM files. Example SRA_convert project config files for our two data sets are also in this repository.
 
 After the data is downloaded, we will need to make some adjustments to the annotation sheet, since geofetch does not work "out of the box".
@@ -39,12 +39,12 @@ After it is finished running, the kallisto results will be in `$PROCESSED/rnaseq
 
 ## DESeq-Packager
 
-DESeq-Packager is another tool that uses the PEP project format, but in R, to produce a countDataSet needed for DESeq analysis. More info can be found [here](https://github.com/databio/DESeq-Packager).
-You can copy the DESeq-Packager.R file into this folder and also create a rundeseq.R file, which contains a few lines of R code to install necessary packages, call the DESeq_Packager function, and save the result into an .RData file.
+DESeq-Packager is another tool that uses the PEP project format in R to produce a countDataSet needed for DESeq analysis. More info can be found [here](https://github.com/databio/DESeq-Packager).
+You can copy the DESeq-Packager.R file into this folder and also create a rundeseq.R file, which contains a few lines of R code to create a PEPR object, call the DESeq_Packager function, and save the result into an .RData file.
 
-Right now the PEP does not know the exact paths to the output tsv files which we will be combining into one table for DESeq.
+Right now the PEP does not know the exact paths to the result tsv files which we will be combining into one table for DESeq.
 The (current) solution to this is to add another derived column to the yaml specifying the file path: `src: "${PROCESSED}/rnaseq_example/results_pipeline/{sample_name}/kallisto/abundance.tsv"`.
-The final project_config file now should look like the one in this repository, and DESeq-Packager will use the src derived column to find the files.
+The final project_config file now should look like the one in this repository.
 In the future, a functionality may be added to Looper to automatically output the location of the processed files.
 
 You can run the rundeseq.R file using `R < rundeseq.R --no-save` on the command line, but there are multiple other ways to run the R script to your liking.
