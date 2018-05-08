@@ -3,10 +3,11 @@ metadata:
   sample_annotation: annocomb_GSE107655.csv
   pipeline_interfaces: ${CODEBASE}/rnapipe/pipeline_interface.yaml
 
-derived_columns: [data_source]
+derived_columns: [data_source, result_source]
 
 data_sources:
   BAM: "${SRABAM}{SRR}.bam"
+  src: "${PROCESSED}/rnaseq_example1/results_pipeline/{sample_name}/kallisto/abundance.tsv"
 
 implied_columns:
   organism:
