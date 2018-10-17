@@ -1,0 +1,38 @@
+# This is an example project for how to use the sra_convert pipeline to convert
+# .sra files to .bam files using looper.
+
+name: GSE107655
+
+metadata:
+  sample_annotation: ${SRAMETA}/GSE107655_annotation.csv
+  sample_subannotation: null
+  output_dir: ${PROCESSED}GSE107655
+  pipeline_interfaces: ${CODEBASE}/rnapipe/pipeline_interface.yaml
+
+derived_columns: [data_source, result_source]
+
+data_sources:
+  SRA: "${SRABAM}{SRR}.bam"
+  src: "${PROCESSED}/GSE107655/results_pipeline/{sample_name}/kallisto/abundance.tsv"
+
+implied_columns:
+  organism:
+    "Mus musculus":
+      genome: mm10
+    "Homo sapiens":
+      genome: hg38
+  read_type:
+    "single":
+      fragment_length: 200
+      fragment_length_sdev: 25
+
+pipeline_args:
+  rnaKallisto.py:
+    "-D": null
+
+subprojects:
+  sra_convert:
+    metadata:
+      pipeline_interfaces: ${CODEBASE}geofetch/sra_convert/pipeline_interface_convert.yaml
+    data_sources:
+     SRA: "${SRARAW}{SRR}.sra"

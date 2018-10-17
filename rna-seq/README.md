@@ -5,8 +5,7 @@ This example will show you how to use Looper to create an RNA-Seq project from s
 ### Required Software
 
 [Geofetch](https://github.com/pepkit/geofetch)
-[sratoolkit](https://www.ncbi.nlm.nih.gov/sra/docs/toolkitsoft/)
-[samtools](http://www.htslib.org/download/)
+
 [Looper](https://looper.readthedocs.io/en/latest/hello-world.html)
 
 ## Environment Setup
@@ -74,12 +73,23 @@ After it is finished running, the RNA-Seq results will be in `$PROCESSED/GSE1076
 ## DESeq-Packager
 
 DESeq-Packager is another tool that uses the PEP project format in R to produce a countDataSet needed for DESeq analysis. More info can be found [here](https://github.com/databio/DESeq-Packager).
-You can copy the DESeq-Packager.R file into this folder and also create a rundeseq.R file, which contains a few lines of R code to create a PEPR object, call the DESeq_Packager function, and save the result into an .RData file.
 
-Right now the PEP does not know the exact paths to the result tsv files which we will be combining into one table for DESeq.
-The (current) solution to this is to add another derived column to the yaml specifying the file path: `src: "${PROCESSED}/rnaseq_example/results_pipeline/{sample_name}/kallisto/abundance.tsv"`.
+After running looper and the rna-seq pipeline, PEP will not know the paths to the $PROCESSED files which we will be needing for DESeq. The solution to this is to add another derived column to the yaml specifying the file path: 
+
+```
+derived_columns: [data_source, result_source]
+
+data_sources:
+  SRA: "${SRABAM}{SRR}.bam"
+  src: "${PROCESSED}/GSE107655/results_pipeline/{sample_name}/kallisto/abundance.tsv"
+```
+(also add a column to the annotation csv with header `result_source` and values of `src`)
+
 The final project_config file now should look like the one in this repository.
-In the future, a functionality may be added to Looper to automatically output the location of the processed files.
+In the future, a functionality may be added to looper to automatically output the location of the processed files.
 
-You can run the rundeseq.R file using `R < rundeseq.R --no-save` on the command line, but there are multiple other ways to run the R script to your liking.
-After the script is done running, the countDataSet will be saved to .RData, and can be copied to another file for further DESeq analysis!
+Now DESeq can use the PEP format to output a countDataSet!
+```R
+p = pepr::Project(file="project_config.yaml")
+countDataSet <- DESeq_Packager(p, "result_source", "target_id", "est_counts")
+```
