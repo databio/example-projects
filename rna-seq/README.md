@@ -1,41 +1,75 @@
 # Complete RNA-Seq Project
 
-This RNA-Seq example will show you how to use the Looper pipeline engine with other tools that are designed for the PEP project format - geofetch, rnapipe, and DESeq-Packager - to create a data table ready for differential expression analysis.
-It is assumed that the user is on the Databio Rivanna server/all environment variables are correctly configured, and the rnapipe and geofetch repositories are already cloned.
+This example will show you how to use Looper to create an RNA-Seq project from start to finish using tools that are designed for the PEP project format: geofetch, rnapipe, and DESeq-Packager.
+
+### Required Software
+
+[Geofetch](https://github.com/pepkit/geofetch)
+[sratoolkit](https://www.ncbi.nlm.nih.gov/sra/docs/toolkitsoft/)
+[samtools](http://www.htslib.org/download/)
+[Looper](https://looper.readthedocs.io/en/latest/hello-world.html)
+
+## Environment Setup
+
+First, the computing environment has to be set up with the correct environment variables to make the Looper configuration easier. If you are in UVA Rivanna and you have the rivanna4 module loaded, then great! Otherwise, in .bash_profile or .profile, add a few environment variables. It might look something like this:
+
+```
+export SRARAW=/path/to/sradata/sraraw/
+export SRAMETA=/path/to/sradata/srameta/
+export SRABAM=/path/to/sradata/srabam/
+export PROCESSED=/path/to/processed/
+```
 
 ## Geofetch
 
-To download publicly available Sequence Read data from the Gene Expression Omnibus (GEO), you can use the tool geofetch.
-Each data set has a GSE accession. For our example projects, we will be using GSE107655 and GSE108003.
-Follow [this link](https://github.com/pepkit/geofetch) to learn how to use the geofetch tool and download the SRA data.
-The first step involving looper will be to convert the SRA files into BAM files. Example SRA_convert project config files for our two data sets are also in this repository.
+We'll be using [GSE107655](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107655) from the Gene Expression Omnibus (GEO). To download the data:
+```
+python geofetch.py -i GSE107655
+```
+This will download the SRA files from GEO to the $SRARAW directory (make sure your prefetch variable is configured correctly, as described in the geofetch README!), and also create a PEP annotation sheet in $SRAMETA for the project.
 
-After the data is downloaded, we will need to make some adjustments to the annotation sheet, since geofetch does not work "out of the box".
-First, copy the sample annotation sheet from the $SRAMETA folder into your home project folder.
-It will also help to make a clone of the folder on your local machine so it will be easier to modify columns in the csv file.
+The first step involving looper will be to convert the SRA files into BAM files. The project_config files produced by geofetch are immediately usable. Go into the $SRAMETA directory and execute
+```
+looper run GSE107655_config.yaml --sp sra_convert --lump 10
+```
+This will turn the .sra files into .bam files and put them in the $SRABAM directory.
 
-The entries in the protocol column have to be changed to the correct RNA sequencing protocol.
-We will be using rnaKallisto for this example.
-The entries in the data_source column should also be changed to BAM for clarity.
+After taking a break while sra_convert runs, we will start the RNA-Seq pipeline.
 
 ## Project Config File
 
-All details about project config files can be found at the [PEP documentation](https://pepkit.github.io/docs/home).
+All details about PEP project config files can be found at the [PEP documentation](https://pepkit.github.io/docs/home).
 
-The metadata section contains the output_dir, sample_annotation, and pipeline_interfaces attributes. 
-The derived_columns section contains the derived column data_source, in which we changed all of the values into "BAM" earlier.
-Thus, the data_sources section should contain `BAM: "${SRABAM}{SRR}.bam"`.
-The implied_columns section contains the transcriptome column that is dependent on the value in the Sample_organism_ch1 column.
-Finally, the pipeline_args section contains default rnaKallisto arguments.
+In the sample annotation sheet file, the entries in the `protocol` column have to be changed to the correct RNA sequencing protocol, which is rnaKallisto for this example. You can do a find-replace for the string cDNA to change the 
 
-Now we are ready for RNA-Seq using the lab's rnaKallisto pipeline.
+Now we will specify the pipeline arguments for rnaKallisto in the project config file. First, add the location of the `rnapipe` pipeline_interface:
+```
+pipeline_interfaces: /path/to/rnapipe/pipeline_interface.yaml
+```
+
+And then add this section right after the `implied_columns` section.
+```
+  read_type:
+    "single":
+     # add default values for kallisto
+       fragment_length: 200
+       fragment_length_sdev: 25
+
+pipeline_args:
+  rnaKallisto.py:
+    "-D": null
+```
 
 ## RNA-Seq Pipeline
 
 [Pipeline source code](https://github.com/databio/rnapipe)
 
-With the project_config file fully configured, you should only need the `looper run project_config.yaml` command.
-After it is finished running, the kallisto results will be in `$PROCESSED/rnaseq_example/results_pipeline/{sample_name}/kallisto`.
+If you already have all of the tools [required by rnaKallisto](https://github.com/databio/rnapipe/blob/master/src/rnaKallisto.yaml), then only one command is needed!
+```
+looper run GSE107655_config.yaml --lump 5
+```
+
+After it is finished running, the RNA-Seq results will be in `$PROCESSED/GSE107655`.
 
 ## DESeq-Packager
 
