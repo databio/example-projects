@@ -39,7 +39,7 @@ After taking a break while sra_convert runs, we will start the RNA-Seq pipeline.
 
 All details about PEP project config files can be found at the [PEP documentation](https://pepkit.github.io/docs/home).
 
-In the sample annotation sheet file, the entries in the `protocol` column have to be changed to the correct RNA sequencing protocol, which is rnaKallisto for this example. You can do a find-replace for the string cDNA to change the 
+In the sample annotation sheet file, the entries in the `protocol` column have to be changed to the correct RNA sequencing protocol, which is `rnaKallisto` for this example.
 
 Now we will specify the pipeline arguments for rnaKallisto in the project config file. First, add the location of the `rnapipe` pipeline_interface:
 ```
