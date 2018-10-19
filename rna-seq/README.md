@@ -1,14 +1,34 @@
 # Complete RNA-Seq Project
 
-This example will show you how to use Looper to create an RNA-Seq project from start to finish using tools that are designed for the PEP project format: geofetch, rnapipe, and DESeq-Packager.
+This example will show you how to use Looper to complete an RNA-Seq project from raw data to differential expression using tools that are designed for the PEP format: geofetch, rnapipe, and DESeq-Packager.
+
+[PEP](https://pepkit.github.io)(Portable Encapsulated Project) format is a way to organize metadata in a yaml and csv so that it can be read by tools in the pep toolkit. A pep project would be a collection of data/samples with its associated metadata. Looper is especially great with pep; it reads the metadata and deploys pipelines across samples, which we will be doing in this project.
 
 ### Required Software
 
 [Geofetch](https://github.com/pepkit/geofetch)
+```
+git clone https://github.com/pepkit/geofetch.git
+echo "/repository/user/main/public/root = \"$SRARAW\"" > ${HOME}/.ncbi/user-settings.mkfg
+```
 
 [Looper](https://looper.readthedocs.io/en/latest/hello-world.html)
+```
+pip install --user https://github.com/pepkit/looper/zipball/master
+export PATH=~/.local/bin:$PATH
+```
 
-## Environment Setup
+[rnapipe](https://github.com/databio/rnapipe)
+```
+git clone https://github.com/databio/rnapipe.git
+```
+
+[DESeq-Packager](https://github.com/databio/deseq-packager)
+```
+git clone https://github.com/databio/DESeq-Packager.git
+```
+
+## 0. Environment Setup
 
 First, the computing environment has to be set up with the correct environment variables to make the Looper configuration easier. If you are in UVA Rivanna and you have the rivanna4 module loaded, then great! Otherwise, in .bash_profile or .profile, add a few environment variables. It might look something like this:
 
@@ -19,9 +39,9 @@ export SRABAM=/path/to/sradata/srabam/
 export PROCESSED=/path/to/processed/
 ```
 
-## Geofetch
+## 1. Downloading raw data from GEO
 
-We'll be using [GSE107655](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107655) from the Gene Expression Omnibus (GEO). To download the data:
+We'll be using [GSE107655](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107655) from the Gene Expression Omnibus (GEO). To download the data, use the tool geofetch:
 ```
 python geofetch.py -i GSE107655
 ```
@@ -35,7 +55,7 @@ This will turn the .sra files into .bam files and put them in the $SRABAM direct
 
 After taking a break while sra_convert runs, we will start the RNA-Seq pipeline.
 
-## Project Config File
+## 2. Updating the Project Config file
 
 All details about PEP project config files can be found at the [PEP documentation](https://pepkit.github.io/docs/home).
 
@@ -59,7 +79,7 @@ pipeline_args:
     "-D": null
 ```
 
-## RNA-Seq Pipeline
+## 3. Running the RNA-Seq pipeline using looper
 
 [Pipeline source code](https://github.com/databio/rnapipe)
 
@@ -70,11 +90,11 @@ looper run GSE107655_config.yaml --lump 5
 
 After it is finished running, the RNA-Seq results will be in `$PROCESSED/GSE107655`.
 
-## DESeq-Packager
+## 4. Output a countTable for differential expression using DESeq-Packager
 
 DESeq-Packager is another tool that uses the PEP project format in R to produce a countDataSet needed for DESeq analysis. More info can be found [here](https://github.com/databio/DESeq-Packager).
 
-After running looper and the rna-seq pipeline, PEP will not know the paths to the $PROCESSED files which we will be needing for DESeq. The solution to this is to add another derived column to the yaml specifying the file path: 
+After running looper and the rna-seq pipeline, PEP will not know the paths to the $PROCESSED files that are used for DESeq. The solution to this is to add another derived column to the yaml specifying the file path: 
 
 ```
 derived_columns: [data_source, result_source]
