@@ -30,7 +30,7 @@ git clone https://github.com/databio/DESeq-Packager.git
 
 ## 0. Environment Setup
 
-First, the computing environment has to be set up with the correct environment variables to make the Looper configuration easier. If you are in UVA Rivanna and you have the rivanna4 module loaded, then great! Otherwise, in .bash_profile or .profile, add a few environment variables. It might look something like this:
+First, the computing environment has to be set up with the correct environment variables to make the Looper configuration easier. If you are in UVA Rivanna and you have the rivanna4 module loaded, then that's all! Otherwise, in .bash_profile or .profile, add a few environment variables. It might look something like this:
 
 ```
 export SRARAW=/path/to/sradata/sraraw/
