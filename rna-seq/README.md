@@ -108,7 +108,7 @@ data_sources:
 The final project_config file now should look like the one in this repository.
 In the future, a functionality may be added to looper to automatically output the location of the processed files.
 
-Now DESeq can use the PEP format to output a countDataSet!
+Now DESeq-Packager can use the PEP format to output a countDataSet!
 ```R
 p = pepr::Project(file="project_config.yaml")
 countDataSet <- DESeq_Packager(p, "result_source", "target_id", "est_counts")
