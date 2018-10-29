@@ -26,10 +26,6 @@ implied_columns:
       fragment_length: 200
       fragment_length_sdev: 25
 
-pipeline_args:
-  rnaKallisto.py:
-    "-D": null
-
 subprojects:
   sra_convert:
     metadata:
