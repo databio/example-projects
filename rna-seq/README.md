@@ -7,15 +7,27 @@ What is PEP, and what are these tools? [PEP](https://pepkit.github.io) (Portable
 An overview of this tutorial:
 1. Download RNA-Seq data from the Gene Expression Omnibus using __Geofetch__, which will automatically produce a PEP yaml and csv from the data
 2. Modifying the yaml file with `rnaKallisto` configurations
-3. Run an RNA-Seq processing pipeline (`rnaKallisto` in __rnapipe__) using looper
+3. Run an RNA-Seq processing pipeline (`rnaKallisto` in __rnapipe__) using `looper`
 4. Format the results of `rnaKallisto` for differential expression analysis using __DESeq-Packager__
 
-### Required Software
+## 0. Environment Setup and Required Software
 
+First, the computing environment has to be set up with the correct environment variables for easier use of the tools (if not, then the filepaths have to be manually specified in command line arguments). Environment variables also make it easier to change the yaml, because changing an environment variable will reflect everywhere it is used.
+
+If you are in UVA Rivanna and you have the rivanna4 module loaded, then that's all! Otherwise, in `.bash_profile` or `.profile`, add a few environment variables. It might look something like this:
+```
+export DATA=/path/to/sradata
+export SRARAW=/path/to/sradata/sra/
+export SRAMETA=/path/to/sradata/sra_meta/
+export SRABAM=/path/to/sradata/sra_bam/
+export PROCESSED=/path/to/processed/
+```
+
+Download software:
 [Geofetch](https://github.com/pepkit/geofetch)
 ```
 git clone https://github.com/pepkit/geofetch.git
-echo "/repository/user/main/public/root = \"$SRARAW\"" > ${HOME}/.ncbi/user-settings.mkfg
+echo "/repository/user/main/public/root = \"$DATA\"" > ${HOME}/.ncbi/user-settings.mkfg
 ```
 (the second line is to configure the data download location)
 
@@ -35,24 +47,12 @@ git clone https://github.com/databio/rnapipe.git
 git clone https://github.com/databio/DESeq-Packager.git
 ```
 
-## 0. Environment Setup
-
-First, the computing environment has to be set up with the correct environment variables for easier use of the tools (if not, then the filepaths have to be manually specified in command line arguments). Environment variables also make it easier to change the yaml, because changing the environment variable will reflect everywhere it is used.
-
-If you are in UVA Rivanna and you have the rivanna4 module loaded, then that's all! Otherwise, in `.bash_profile` or `.profile`, add a few environment variables. It might look something like this:
-
-```
-export SRARAW=/path/to/sradata/sraraw/
-export SRAMETA=/path/to/sradata/srameta/
-export SRABAM=/path/to/sradata/srabam/
-export PROCESSED=/path/to/processed/
-```
-
 ## 1. Downloading raw data from GEO
 
 We'll be using [GSE107655](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107655) from the Gene Expression Omnibus (GEO). To download the data, use the tool `geofetch`:
 ```
-python geofetch.py -i GSE107655
+cd geofetch/geofetch
+python geofetch.py -i GSE107655 -pipe path/to/rnapipe/pipeline_interface.yaml
 ```
 `Geofetch` downloads data into $SRARAW and also create a PEP yaml and csv in $SRAMETA.
 
@@ -61,28 +61,6 @@ The first step involving `looper` will be to convert the SRA files into BAM file
 cd $SRAMETA
 looper run GSE107655_config.yaml --sp sra_convert --lump 10
 ```
-
-## 2. Updating the Project Config file
-
-All details about PEP project config files can be found at the [PEP documentation](https://pepkit.github.io/docs/home).
-
-In the sample annotation sheet file, the entries in the `protocol` column have to be changed to the correct RNA sequencing protocol, which is `rnaKallisto` for this example. You can do a find-replace for `cDNA` in your favorite text editor.
-
-Now we will specify the pipeline arguments for `rnaKallisto` in the project config file. First, add the location of the `rnapipe` pipeline interface under the `metadata` section:
-```
-pipeline_interfaces: /path/to/rnapipe/pipeline_interface.yaml
-```
-
-Then add this right after the `implied_columns` section, keeping the tabulation.
-```
-  read_type:
-    "single":
-     # add default values for kallisto
-       fragment_length: 200
-       fragment_length_sdev: 25
-```
-`rnaKallisto` requires estimates of the average fragment length and standard deviation for single-end reads, which is why we are asking PEP to add the `read_type` implied column.
-
 
 ## 3. Running the RNA-Seq pipeline using looper
 
@@ -112,7 +90,12 @@ A column with header `result_source` and values of `src` will also need to be ad
 The final `project_config.yaml` file now should look like the one in this repository.
 
 Now, in R, DESeq-Packager can use the PEP format to output a countDataSet!
+```
+cd /path/to/DESeq-Packager
+```
+
 ```R
+source("DESeq_Packager.R")
 p = pepr::Project(file="project_config.yaml")
 countDataSet <- DESeq_Packager(p, "result_source", "target_id", "est_counts")
 # do DESeq analysis with the countDataSet

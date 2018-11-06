@@ -21,11 +21,7 @@ implied_columns:
       genome: mm10
     "Homo sapiens":
       genome: hg38
-  read_type:
-    "single":
-      fragment_length: 200
-      fragment_length_sdev: 25
-
+      
 subprojects:
   sra_convert:
     metadata:
