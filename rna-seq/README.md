@@ -6,9 +6,8 @@ What is PEP, and what are these tools? [PEP](https://pepkit.github.io) (Portable
 
 An overview of this tutorial:
 1. Download RNA-Seq data from the Gene Expression Omnibus using __Geofetch__, which will automatically produce a PEP yaml and csv from the data
-2. Modifying the yaml file with `rnaKallisto` configurations
-3. Run an RNA-Seq processing pipeline (`rnaKallisto` in __rnapipe__) using `looper`
-4. Format the results of `rnaKallisto` for differential expression analysis using __DESeq-Packager__
+2. Run an RNA-Seq processing pipeline (`rnaKallisto` in __rnapipe__) using `looper`
+3. Format the results of `rnaKallisto` for differential expression analysis using __DESeq-Packager__
 
 ## 0. Environment Setup and Required Software
 
@@ -52,7 +51,7 @@ git clone https://github.com/databio/DESeq-Packager.git
 We'll be using [GSE107655](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107655) from the Gene Expression Omnibus (GEO). To download the data, use the tool `geofetch`:
 ```
 cd geofetch/geofetch
-python geofetch.py -i GSE107655 -pipe path/to/rnapipe/pipeline_interface.yaml
+python geofetch.py -i GSE107655 --pipeline_interfaces path/to/rnapipe/pipeline_interface.yaml
 ```
 `Geofetch` downloads data into $SRARAW and also create a PEP yaml and csv in $SRAMETA.
 
@@ -62,18 +61,19 @@ cd $SRAMETA
 looper run GSE107655_config.yaml --sp sra_convert --lump 10
 ```
 
-## 3. Running the RNA-Seq pipeline using looper
+## 2. Running the RNA-Seq pipeline using looper
 
 [Pipeline source code](https://github.com/databio/rnapipe)
 
 If you already have all of the tools [required by rnaKallisto](https://github.com/databio/rnapipe/blob/master/src/rnaKallisto.yaml), then only one command is needed!
 ```
-looper run GSE107655_config.yaml --lump 5
+cd $SRAMETA/GSE107655
+looper run GSE107655_config.yaml --lump 5 --single-end-defaults
 ```
 
 After it is finished running, the RNA-Seq results will be in `$PROCESSED/GSE107655`.
 
-## 4. Output a countTable for differential expression using DESeq-Packager
+## 3. Output a countTable for differential expression using DESeq-Packager
 
 `DESeq-Packager` uses the PEP project format in R to produce a countDataSet needed for DESeq analysis. More info can be found [in the DESeq-Packager repository](https://github.com/databio/DESeq-Packager).
 
