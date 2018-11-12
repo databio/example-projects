@@ -77,7 +77,7 @@ After it is finished running, the RNA-Seq results will be in `$PROCESSED/GSE1076
 
 `DESeq-Packager` uses the PEP project format in R to produce a countDataSet needed for DESeq analysis. More info can be found [in the DESeq-Packager repository](https://github.com/databio/DESeq-Packager).
 
-After running `rnaKallisto`, the PEP project will not know the paths to the `$PROCESSED` files that are used for DESeq. The solution to this is to add another [derived attributes](https://pepkit.github.io/docs/derived_attributes/), `result_source`, which will fill in the `src` values with the correct path to the `$PROCESSED` files.  In the future, a functionality may be added to `looper` to automatically output the location of the processed files.
+After running `rnaKallisto`, the PEP project does not know the paths to the `$PROCESSED` files. The solution to this is to add another [derived attribute](https://pepkit.github.io/docs/derived_attributes/), here called `result_source`, along with another specification in `data_sources`, here called `src`. In addition, in the sample annotation csv, a column with header `result_source` and values of `src` will need to be added. This combination of a derived attribute and data source will essentially fill in the `src` values in the sample annotation csv with the correct path to the `$PROCESSED` files.
 ```
 derived_attributes: [data_source, result_source]
 
@@ -85,7 +85,7 @@ data_sources:
   SRA: "${SRABAM}{SRR}.bam"
   src: "${PROCESSED}/GSE107655/results_pipeline/{sample_name}/kallisto/abundance.tsv"
 ```
-A column with header `result_source` and values of `src` will also need to be added into the annotation csv.
+Now DESeq-Packager will know where to find the abundance.tsv files needed for DESeq. In the future, a functionality may be added to `looper` to automatically output the location of the processed files.
 
 The final `project_config.yaml` file now should look like the one in this repository.
 

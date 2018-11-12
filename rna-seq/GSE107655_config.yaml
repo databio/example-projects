@@ -27,4 +27,4 @@ subprojects:
     metadata:
       pipeline_interfaces: ${CODEBASE}geofetch/sra_convert/pipeline_interface_convert.yaml
     data_sources:
-     SRA: "${SRARAW}{SRR}.sra"
+      SRA: "${SRARAW}{SRR}.sra"
