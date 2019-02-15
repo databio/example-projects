@@ -1,13 +1,13 @@
 # Complete RNA-Seq Project
 
-This example will show you how to use `looper` to complete an RNA-Seq project - from raw data download to differential expression analysis - using tools that are designed for the PEP format: `geofetch`, `rnapipe`, and `DESeq-Packager`.
+This example will show you how to use `looper` to complete an RNA-Seq project - from raw data download to differential expression analysis - using tools that are designed for the PEP format: `geofetch`, `rnapipe`,`BiocProject`, and `DESeqPackager`.
 
 What is PEP? [PEP](https://pepkit.github.io) (Portable Encapsulated Project) format is a way to organize metadata, which consists of samples' file paths and features such as organism, source, and extraction protocol. PEP format requires only a yaml (for project/pipeline configuration) and csv (for sample annotation), and they make a project immediately compatible with PEP tools. 
 
 An overview of this tutorial:
 1. Download RNA-Seq data from the Gene Expression Omnibus using `geofetch`, which will automatically produce a PEP project_config yaml and sample_annotation csv from the data
 2. Run an RNA-Seq processing pipeline (`rnaKallisto` from the `rnapipe` repository) using `looper`
-3. Format the results of `rnaKallisto` for differential expression analysis using `DESeq-Packager`
+3. Format the results of `rnaKallisto` for differential expression analysis using `DESeqPackager`
 
 ## 0. Environment Setup and Required Software
 
@@ -41,9 +41,14 @@ export PATH=~/.local/bin:$PATH
 git clone https://github.com/databio/rnapipe.git
 ```
 
-[DESeq-Packager](https://github.com/databio/deseq-packager)
+[BiocProject](http://code.databio.org/BiocProject/index.html)
+```R
+devtools::install_github("pepkit/BiocProject")
 ```
-git clone https://github.com/databio/DESeq-Packager.git
+
+[DESeqPackager](https://github.com/databio/DESeqPackager)
+```
+git clone https://github.com/databio/DESeqPackager.git
 ```
 
 ## 1. Downloading raw data from GEO
@@ -53,7 +58,7 @@ We'll be using [GSE107655](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GS
 cd geofetch/geofetch
 python geofetch.py -i GSE107655 --pipeline_interfaces path/to/rnapipe/pipeline_interface.yaml
 ```
-`Geofetch` downloads SRA data into `$SRARAW` and also create a PEP project_config yaml and sample_annotation csv in `$SRAMETA/GSE107655`.
+`Geofetch` downloads SRA data into `$SRARAW` and also create a PEP config file (`GSE107655_config.yaml`) and sample_annotation csv (`GSE107655_annotation`) in the `$SRAMETA/GSE107655` folder.
 
 The first step involving `looper` will be to convert the SRA files into BAM files. `geofetch` has already set up the yaml file properly.
 ```
@@ -73,9 +78,9 @@ looper run GSE107655_config.yaml --lump 5 --single-end-defaults
 
 After it is finished running, the RNA-Seq results will be in `$PROCESSED/GSE107655`.
 
-## 3. Output a countTable for differential expression using DESeq-Packager
+## 3. Output a countTable for differential expression using DESeqPackager
 
-`DESeq-Packager` uses the PEP project format in R to produce a countDataSet needed for DESeq analysis. More info can be found [in the DESeq-Packager repository](https://github.com/databio/DESeq-Packager).
+`DESeqPackager` uses the PEP project format in R to produce a countDataSet needed for DESeq analysis. More info can be found [in the DESeqPackager repository](https://github.com/databio/DESeqPackager).
 
 After running `rnaKallisto`, the PEP project does not know the paths to the `$PROCESSED` files. The solution to this is to add another [derived attribute](https://pepkit.github.io/docs/derived_attributes/), here called `result_source`, along with another specification in `data_sources`, here called `src`. In addition, in the sample_annotation csv, a column with header `result_source` and values of `src` will need to be added. This combination of a derived attribute and data source will essentially fill in the `src` values in the sample_annotation csv with the correct path to the `$PROCESSED` files.
 ```
@@ -85,15 +90,14 @@ data_sources:
   SRA: "${SRABAM}{SRR}.bam"
   src: "${PROCESSED}/GSE107655/results_pipeline/{sample_name}/kallisto/abundance.tsv"
 ```
-Now DESeq-Packager will know where to find the `abundance.tsv` files needed for DESeq. In the future, a functionality may be added to `looper` to automatically output the location of the processed files.
+Now DESeqPackager will know where to find the `abundance.tsv` files needed for DESeq. In the future, a functionality may be added to `looper` to automatically output the location of the processed files.
 
-The final `project_config.yaml` file now should look like the one in this repository.
+The final `GSE107655_config.yaml` file now should look like the one in this repository.
 
-Now, in R, `DESeq-Packager` can use the PEP format to output a countDataSet!
+Now, in R, `BiocProject` uses `DESeqPackager` and `pepr` behind the scenes to output a countDataSet!
 ```R
-setwd("/path/to/DESeq-Packager")
-source("DESeq_Packager.R")
-p = pepr::Project(file="project_config.yaml")
-countDataSet <- DESeq_Packager(p, "result_source", "target_id", "est_counts")
-# do DESeq analysis with the countDataSet
+source("/path/to/DESeqPackager.R")
+bpArgs = BiocProject(file="GSE107655_config.yaml")
+getData(bpArgs)
+# do DESeq analysis with the produced countDataSet
 ```

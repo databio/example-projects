@@ -28,3 +28,11 @@ subprojects:
       pipeline_interfaces: ${CODEBASE}geofetch/sra_convert/pipeline_interface_convert.yaml
     data_sources:
       SRA: "${SRARAW}{SRR}.sra"
+
+bioconductor:
+  readFunName: DESeqPackager
+  readFunPath: DESeqPackager.R
+  funcArgs:
+    data_source: result_source
+    gene_names: target_id
+    gene_counts: est_counts
