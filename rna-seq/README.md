@@ -92,7 +92,18 @@ data_sources:
 ```
 Now DESeqPackager will know where to find the `abundance.tsv` files needed for DESeq. In the future, a functionality may be added to `looper` to automatically output the location of the processed files.
 
-The final `GSE107655_config.yaml` file now should look like the one in this repository.
+We can use BiocProject to interface with DESeqPackager by adding a section called `bioconductor` in the yaml. This will tell `BiocProject` what function we are using, and also what arguments that function takes.
+```
+bioconductor:
+  readFunName: DESeqPackager
+  readFunPath: DESeqPackager.R
+  funcArgs:
+    data_source: result_source
+    gene_names: target_id
+    gene_counts: est_counts
+```
+
+The final `GSE107655_config.yaml` file should look like the one in this repository.
 
 Now, in R, `BiocProject` uses `DESeqPackager` and `pepr` behind the scenes to output a countDataSet!
 ```R
