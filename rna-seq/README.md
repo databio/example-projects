@@ -1,8 +1,8 @@
 # Complete RNA-Seq Project
 
-This example will show you how to use `looper` to complete an RNA-Seq project - from raw data download to differential expression analysis - using tools that are designed for the PEP format: `geofetch`, `rnapipe`,`BiocProject`, and `DESeqPackager`.
+This example will show you how to use `looper` to complete an RNA-Seq project -- from raw data download to differential expression analysis -- using tools that are designed for the PEP format: `geofetch`, `rnapipe`, `BiocProject`, and `DESeqPackager`.
 
-What is PEP? [PEP](https://pepkit.github.io) (Portable Encapsulated Project) format is a way to organize metadata, which consists of samples' file paths and features such as organism, source, and extraction protocol. PEP format requires only a yaml (for project/pipeline configuration) and csv (for sample annotation), and they make a project immediately compatible with PEP tools. 
+What is PEP? [PEP format](https://pepkit.github.io) is a way to organize metadata, which consists of sample file paths and attributes, such as `organism`, `source`, and extraction `protocol`. PEP format requires only a `yaml` (for project/pipeline configuration) and `csv` (for sample annotation), is compatible with a variety of PEP tools. 
 
 An overview of this tutorial:
 1. Download RNA-Seq data from the Gene Expression Omnibus using `geofetch`, which will automatically produce a PEP project_config yaml and sample_annotation csv from the data
@@ -22,31 +22,35 @@ export SRABAM=/path/to/sradata/sra_bam/
 export PROCESSED=/path/to/processed/
 ```
 
-Download software:
-[geofetch](https://github.com/pepkit/geofetch)
-```
-git clone https://github.com/pepkit/geofetch.git
-echo "/repository/user/main/public/root = \"$DATA\"" > ${HOME}/.ncbi/user-settings.mkfg
-```
-(the second line is to configure the data download location)
+Now install the required software:
 
-[looper](https://looper.readthedocs.io/en/latest/hello-world.html)
+- [geofetch](https://github.com/pepkit/geofetch)
+```
+pip install --user geofetch
+```
+
+You may want to [adjust where geofetch downloads data](http://code.databio.org/geofetch/howto-location/).
+
+- [looper](https://looper.readthedocs.io/en/latest/hello-world.html)
+
 ```
 pip install --user https://github.com/pepkit/looper/zipball/master
-export PATH=~/.local/bin:$PATH
 ```
 
-[rnapipe](https://github.com/databio/rnapipe)
+- [rnapipe](https://github.com/databio/rnapipe)
+
 ```
 git clone https://github.com/databio/rnapipe.git
 ```
 
-[BiocProject](http://code.databio.org/BiocProject/index.html)
+- [BiocProject](http://code.databio.org/BiocProject/index.html)
+
 ```R
 devtools::install_github("pepkit/BiocProject")
 ```
 
-[DESeqPackager](https://github.com/databio/DESeqPackager)
+- [DESeqPackager](https://github.com/databio/DESeqPackager)
+
 ```
 git clone https://github.com/databio/DESeqPackager.git
 ```
@@ -55,8 +59,7 @@ git clone https://github.com/databio/DESeqPackager.git
 
 We'll be using [GSE107655](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107655) from the Gene Expression Omnibus (GEO). To download the data, use the tool `geofetch`:
 ```
-cd geofetch/geofetch
-python geofetch.py -i GSE107655 --pipeline_interfaces path/to/rnapipe/pipeline_interface.yaml
+geofetch -i GSE107655 --pipeline_interfaces path/to/rnapipe/pipeline_interface.yaml
 ```
 `Geofetch` downloads SRA data into `$SRARAW` and also create a PEP config file (`GSE107655_config.yaml`) and sample_annotation csv (`GSE107655_annotation`) in the `$SRAMETA/GSE107655` folder.
 
